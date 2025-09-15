@@ -11,7 +11,7 @@ def formatar_meio_de_pagamento(observacoes):
     """
     pagamentos_encontrados = []
 
-    # Padrão para pagamentos múltiplos (ex: R$ 125,00 no dinheiro)
+    # Padrão para pagamentos múltiplos
     padrao_multiplo = re.findall(r'R\$\s*([\d.,]+)\s*.*?(dinheiro|master|elo|pix)', observacoes, re.IGNORECASE)
 
     if padrao_multiplo:
@@ -29,7 +29,7 @@ def formatar_meio_de_pagamento(observacoes):
     if pagamentos_encontrados:
         return ", ".join(pagamentos_encontrados)
 
-    # Lógica para pagamentos únicos baseada em palavras-chave
+    # Lógica
     if 'link de pagamento' in observacoes.lower(): return 'Cartão de Crédito'
     if 'elo' in observacoes.lower(): return 'Cartão de Débito'
     if 'a receber' in observacoes.lower() or 'pix' in observacoes.lower(): return 'Transferência/PIX'
@@ -110,17 +110,13 @@ def criar_planilha_excel(dados_vendas, caminho_saida):
     ordem_colunas = ['Numero do Pedido', 'Data', 'Nome do Cliente', 'Valor Total', 'Meio de Pagamento']
     df = pd.DataFrame(dados_vendas)
 
-    # Converte as colunas para o tipo correto antes de ordenar
     df['Numero do Pedido'] = pd.to_numeric(df['Numero do Pedido'])
     df['Data'] = pd.to_datetime(df['Data'], format='%d/%m/%Y')
 
-    # **NOVO: Ordena os dados pelo número do pedido e depois pela data**
     df = df.sort_values(by=['Numero do Pedido', 'Data'])
 
-    # Formata a data de volta para o formato dia/mês/ano para exibição no Excel
     df['Data'] = df['Data'].dt.strftime('%d/%m/%Y')
 
-    # Garante a ordem final das colunas
     df = df[ordem_colunas]
 
     total_mes = df['Valor Total'].sum()
@@ -146,7 +142,7 @@ def criar_planilha_excel(dados_vendas, caminho_saida):
     print(f"\nPlanilha '{caminho_saida}' gerada com sucesso e em ordem!")
 
 
-# --- INÍCIO DA EXECUÇÃO ---
+# main
 if __name__ == "__main__":
     pasta_dos_pdfs = "PDF"
 
@@ -158,4 +154,5 @@ if __name__ == "__main__":
     elif dados_extraidos is None:
         pass
     else:
+
         print("Nenhuma transação de venda foi encontrada nos arquivos PDF.")
