@@ -3,17 +3,12 @@ import re
 import pandas as pd
 import pdfplumber
 from collections import Counter
-
+# ----------------------------------------------------------------------------------------------
 
 def formatar_meio_de_pagamento(observacoes):
-    """
-    Analisa as observações de uma venda para identificar e formatar os meios de pagamento.
-    """
     pagamentos_encontrados = []
-
     # Padrão para pagamentos múltiplos
     padrao_multiplo = re.findall(r'R\$\s*([\d.,]+)\s*.*?(dinheiro|master|elo|pix)', observacoes, re.IGNORECASE)
-
     if padrao_multiplo:
         for valor, tipo in padrao_multiplo:
             valor_formatado = valor.strip().replace('.', '').replace(',', '.')
@@ -28,7 +23,7 @@ def formatar_meio_de_pagamento(observacoes):
 
     if pagamentos_encontrados:
         return ", ".join(pagamentos_encontrados)
-
+        
     # Lógica
     if 'link de pagamento' in observacoes.lower(): return 'Cartão de Crédito'
     if 'elo' in observacoes.lower(): return 'Cartão de Débito'
@@ -37,11 +32,8 @@ def formatar_meio_de_pagamento(observacoes):
 
     return 'Não Especificado'
 
-
 def encontrar_pagamento_mais_frequente(df_vendas):
-    """
-    Calcula o meio de pagamento mais comum a partir da coluna de pagamentos.
-    """
+    # Meio de pagamento mais comum
     if df_vendas.empty: return "Nenhum"
 
     lista_pagamentos = []
@@ -55,18 +47,13 @@ def encontrar_pagamento_mais_frequente(df_vendas):
     if not lista_pagamentos: return "Nenhum"
     return Counter(lista_pagamentos).most_common(1)[0][0]
 
-
 def extrair_dados_dos_pdfs(pasta_dos_pdfs):
-    """
-    Lê todos os PDFs em uma pasta e extrai as informações das transações.
-    """
+    # Lê todos os PDF
     lista_de_transacoes = []
-
     if not os.path.isdir(pasta_dos_pdfs):
         print(
             f"ERRO: A pasta '{pasta_dos_pdfs}' não foi encontrada. Por favor, crie a pasta e coloque seus relatórios dentro dela.")
         return None
-
     for nome_arquivo in os.listdir(pasta_dos_pdfs):
         if nome_arquivo.lower().endswith('.pdf'):
             caminho_completo = os.path.join(pasta_dos_pdfs, nome_arquivo)
@@ -102,11 +89,8 @@ def extrair_dados_dos_pdfs(pasta_dos_pdfs):
                 print(f"Erro ao processar o arquivo {nome_arquivo}: {e}")
     return lista_de_transacoes
 
-
 def criar_planilha_excel(dados_vendas, caminho_saida):
-    """
-    Cria a planilha Excel com os dados das vendas, ordenados e com resumo final.
-    """
+    # Cria a planilha
     ordem_colunas = ['Numero do Pedido', 'Data', 'Nome do Cliente', 'Valor Total', 'Meio de Pagamento']
     df = pd.DataFrame(dados_vendas)
 
@@ -141,18 +125,13 @@ def criar_planilha_excel(dados_vendas, caminho_saida):
 
     print(f"\nPlanilha '{caminho_saida}' gerada com sucesso e em ordem!")
 
-
-# main
 if __name__ == "__main__":
     pasta_dos_pdfs = "PDF"
-
     dados_extraidos = extrair_dados_dos_pdfs(pasta_dos_pdfs)
-
     if dados_extraidos:
         nome_arquivo_excel = "Relatorio_Mensal_Completo.xlsx"
         criar_planilha_excel(dados_extraidos, nome_arquivo_excel)
     elif dados_extraidos is None:
         pass
     else:
-
         print("Nenhuma transação de venda foi encontrada nos arquivos PDF.")
